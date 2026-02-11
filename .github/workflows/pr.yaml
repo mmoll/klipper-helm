@@ -42,7 +42,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/riscv64
           outputs: type=image,"name=${{ env.DOCKERHUB_REPO }},${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=false
 
   build-arm:
@@ -90,40 +90,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: linux/${{ matrix.platform }}
-          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }},${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=false
-
-  build-riscv:
-    runs-on: riscv-builders
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Set DOCKERHUB_REPO
-        run: |
-          if [ "${{ github.repository_owner }}" == "k3s-io" ]; then
-            echo "DOCKERHUB_REPO=rancher/klipper-helm" >> $GITHUB_ENV
-          else
-            echo "DOCKERHUB_REPO=${{ secrets.DOCKER_USERNAME }}/klipper-helm" >> $GITHUB_ENV
-          fi
-
-      - name: Docker source meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.DOCKERHUB_REPO }}
-            ${{ env.GHCR_REPO }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Image
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/riscv64
           outputs: type=image,"name=${{ env.DOCKERHUB_REPO }},${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=false
